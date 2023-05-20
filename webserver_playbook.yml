@@ -1,0 +1,32 @@
+---
+- name: Install and configure Apache
+  hosts: all
+  become: yes
+  vars:
+    template_url: "https://www.free-css.com/assets/files/free-css-templates/download/page255/xeon.zip"
+  tasks:
+    - name: Install Apache package
+      package:
+        name: "{{ 'httpd' if ansible_distribution == 'CentOS' else 'apache2' }}"
+        state: present
+      when: ansible_distribution in ['CentOS', 'Ubuntu']
+
+    - name: Start and enable Apache service
+      service:
+        name: "{{ 'httpd' if ansible_distribution == 'CentOS' else 'apache2' }}"
+        state: started
+        enabled: yes
+      when: ansible_distribution in ['CentOS', 'Ubuntu']
+
+    - name: Download template from free-css.com
+      get_url:
+        url: "{{ template_url }}"
+        dest: "/var/www/html/xeon.zip"
+      when: ansible_distribution in ['CentOS', 'Ubuntu']
+
+    - name: Extract template
+      unarchive:
+        src: "/var/www/html/xeon.zip"
+        dest: "/var/www/html/"
+        remote_src: yes
+      when: ansible_distribution in ['CentOS', 'Ubuntu']
